@@ -11,10 +11,18 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   getting-started
-   commands
 
+   README
+   modules
 
+Analysis
+====================
+Jupyter notebook contents:
+
+.. toctree::
+   :maxdepth: 2
+
+   0.1-cristian-explore_data.ipynb
 
 Indices and tables
 ==================
