@@ -200,8 +200,13 @@ def convert_to_timestamp(df, time_columns):
 
         elif (len(str(int(df[column][0]))) == 5) or (len(str(int(df[column][0]))) == 6):
             # convert to time stamp and then to int
-            df[column] = pd.to_datetime(df[column].astype(
-                int), format='%Y%m').astype(np.int64)
+            try:
+                df[column] = pd.to_datetime(df[column].astype(
+                    int), format='%Y%m').astype(np.int64)
+            except:
+                df[column] = (df[column] / 100).astype(int)
+                df[column] = pd.to_datetime(df[column].astype(
+                    int), format='%Y').astype(np.int64)
 
         # convert to time stamp and then to int
         elif len(str(int(df[column][0]))) == 8:

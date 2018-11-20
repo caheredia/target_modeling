@@ -62,6 +62,6 @@ def run_models(Xtrain, ytrain, Xtest, ytest, model_dict=model_dict):
         ypred = clf.predict(Xtest)
         test_time = time() - t0
         print('test time: {:0.2f}s \n'.format(test_time))
-        accuracy_score(ytest, ypred)
+        print('Accuracy Score: {}'.format(accuracy_score(ytest, ypred)))
         print(classification_report(ytest, ypred, target_names=target_names))
         print('-' * 80)
