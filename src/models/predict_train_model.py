@@ -10,18 +10,20 @@ from sklearn.metrics import accuracy_score
 # populate dict with classifiers
 model_dict = {}
 
-Logistic_Regression = LogisticRegression(
-    class_weight='balanced', fit_intercept=False, solver='liblinear')
-model_dict['Logistic Regression'] = Logistic_Regression
+model_dict['Logistic Regression'] = LogisticRegression(
+    class_weight='balanced', fit_intercept=False, solver='sag')
 
-SGD = SGDClassifier(loss="hinge", max_iter=20, class_weight='balanced',  fit_intercept=False)
-model_dict['Stochastic Gradient Descent'] = SGD
 
-DT = DecisionTreeClassifier(max_depth=11, class_weight='balanced')
-model_dict['Decision Tree'] = DT
+model_dict['Stochastic Gradient Descent'] = SGDClassifier(
+    loss="hinge", max_iter=20, class_weight='balanced',  fit_intercept=False)
 
-RT = RandomForestClassifier(n_estimators=100, n_jobs=-1, class_weight='balanced')
-model_dict['Random Forest'] = RT
+
+model_dict['Decision Tree'] = DecisionTreeClassifier(
+    max_depth=11, class_weight='balanced')
+
+model_dict['Random Forest'] = RandomForestClassifier(
+    n_estimators=100, n_jobs=-1, class_weight='balanced')
+
 
 # label data
 target_names = ['0', '1']
@@ -61,7 +63,7 @@ def run_models(Xtrain, ytrain, Xtest, ytest, model_dict=model_dict):
         t0 = time()
         ypred = clf.predict(Xtest)
         test_time = time() - t0
-        print('test time: {:0.2f}s \n'.format(test_time))
-        print('Accuracy Score: {}'.format(accuracy_score(ytest, ypred)))
+        print('test time: {:0.2f}s'.format(test_time))
+        print('Accuracy Score: {} \n'.format(accuracy_score(ytest, ypred)))
         print(classification_report(ytest, ypred, target_names=target_names))
         print('-' * 80)
