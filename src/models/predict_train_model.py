@@ -11,7 +11,7 @@ from sklearn.metrics import accuracy_score
 model_dict = {}
 
 model_dict['Logistic Regression'] = LogisticRegression(
-    class_weight='balanced', fit_intercept=False, solver='sag')
+    class_weight='balanced', fit_intercept=False, solver='sag', max_iter=500, n_jobs=-1)
 
 
 model_dict['Stochastic Gradient Descent'] = SGDClassifier(

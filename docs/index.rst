@@ -22,7 +22,7 @@ Jupyter notebook contents:
 .. toctree::
    :maxdepth: 2
 
-   0.1-cristian-explore_data.ipynb
+   0.1-cristian_explore_data.ipynb
 
 Indices and tables
 ==================
