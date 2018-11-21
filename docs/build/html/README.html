@@ -1,0 +1,346 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>target_modeling &mdash; target_modeling 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Python Modules" href="modules.html" />
+    <link rel="prev" title="target_modeling documentation" href="index.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> target_modeling
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">target_modeling</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#project-organization">Project Organization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Python Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="0.1-cristian_explore_data.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="0.1-cristian_explore_data.html#Load-raw-data">Load raw data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="0.1-cristian_explore_data.html#Clean-raw-data">Clean raw data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="0.1-cristian_explore_data.html#Load-cleaned-data">Load cleaned data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="0.1-cristian_explore_data.html#Preprocess-data">Preprocess data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="0.1-cristian_explore_data.html#Models">Models</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">target_modeling</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>target_modeling</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/README.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="target-modeling">
+<span id="target-modeling"></span><h1>target_modeling<a class="headerlink" href="#target-modeling" title="Permalink to this headline">¶</a></h1>
+<p>Build a classification model to rank the individuals in the data set, using the FLOZVPMFT4626A column as your target variable</p>
+<p>This report analyzes the several machine learning models—Logistic Regression, Stochastic Gradient Descent, Decision Tree, and Random Forest—through model evaluation and the tuning of hyperparameters, which are parameters that define the model. The chosen models where used because they best handled large data sets with lots of features. The features were cleaned up and transformed in the third section of the Jupyter Notebook: Clean raw data.</p>
+<p>In the Clean raw data section I removed mostly empty columns and converted time like columns to time stamps, which were later converted to integers for preprocessing. This last step separates the data set into testing and training sets for model validation. In the preprocessing the data is also scaled from 0 to 1, this helps the models converge.</p>
+<p>Once the notebook has been run once, the cleaned data will be saved into a CSV file. Then the notebook could be started from Section: Load cleaned data.</p>
+<p>The initial inspection of the data demonstrates an unbalanced data set, with ~75% of data labeled 0; ~25%, 1. Wherever possible the models were tuned to fit an unbalanced data set, with class_weight =’balanced’. Given more time and familiarity with models, I would have included Validation Curves to plot validation scores and training scores as a function of model complexity.</p>
+<p>Summary
+Most of the models converged, however, some converged faster than others. Logistic Regression yielded the best f1-score for items labeled 1. Logistic Regression also took the longest time to train. Conversely, Random Forest yielded the best f1 score for items labels 0, and with the shortest training time.</p>
+<p>Logistic Regression
+train time: 682.77s
+test time: 0.32s
+Accuracy Score: 0.67684</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>          <span class="n">precision</span>    <span class="n">recall</span>  <span class="n">f1</span><span class="o">-</span><span class="n">score</span>   <span class="n">support</span>
+
+       <span class="mi">0</span>       <span class="mf">0.87</span>      <span class="mf">0.67</span>      <span class="mf">0.76</span>     <span class="mi">18705</span>
+       <span class="mi">1</span>       <span class="mf">0.42</span>      <span class="mf">0.71</span>      <span class="mf">0.52</span>      <span class="mi">6295</span>
+</pre></div>
+</div>
+<p>micro avg       0.68      0.68      0.68     25000
+macro avg       0.64      0.69      0.64     25000
+weighted avg       0.76      0.68      0.70     25000</p>
+<hr class="docutils" />
+<p>Stochastic Gradient Descent
+train time: 6.00s
+test time: 0.04s
+Accuracy Score: 0.58804</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>          <span class="n">precision</span>    <span class="n">recall</span>  <span class="n">f1</span><span class="o">-</span><span class="n">score</span>   <span class="n">support</span>
+
+       <span class="mi">0</span>       <span class="mf">0.82</span>      <span class="mf">0.58</span>      <span class="mf">0.68</span>     <span class="mi">18705</span>
+       <span class="mi">1</span>       <span class="mf">0.33</span>      <span class="mf">0.61</span>      <span class="mf">0.43</span>      <span class="mi">6295</span>
+</pre></div>
+</div>
+<p>micro avg       0.59      0.59      0.59     25000
+macro avg       0.57      0.60      0.55     25000
+weighted avg       0.69      0.59      0.62     25000</p>
+<hr class="docutils" />
+<p>Decision Tree
+train time: 30.06s
+test time: 0.14s
+Accuracy Score: 0.65544</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>          <span class="n">precision</span>    <span class="n">recall</span>  <span class="n">f1</span><span class="o">-</span><span class="n">score</span>   <span class="n">support</span>
+
+       <span class="mi">0</span>       <span class="mf">0.84</span>      <span class="mf">0.66</span>      <span class="mf">0.74</span>     <span class="mi">18705</span>
+       <span class="mi">1</span>       <span class="mf">0.39</span>      <span class="mf">0.63</span>      <span class="mf">0.48</span>      <span class="mi">6295</span>
+</pre></div>
+</div>
+<p>micro avg       0.66      0.66      0.66     25000
+macro avg       0.61      0.65      0.61     25000
+weighted avg       0.73      0.66      0.68     25000</p>
+<hr class="docutils" />
+<p>Random Forest
+train time: 44.60s
+test time: 0.90s
+Accuracy Score: 0.77708</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>          <span class="n">precision</span>    <span class="n">recall</span>  <span class="n">f1</span><span class="o">-</span><span class="n">score</span>   <span class="n">support</span>
+
+       <span class="mi">0</span>       <span class="mf">0.79</span>      <span class="mf">0.96</span>      <span class="mf">0.87</span>     <span class="mi">18705</span>
+       <span class="mi">1</span>       <span class="mf">0.67</span>      <span class="mf">0.23</span>      <span class="mf">0.34</span>      <span class="mi">6295</span>
+</pre></div>
+</div>
+<p>micro avg       0.78      0.78      0.78     25000
+macro avg       0.73      0.59      0.60     25000
+weighted avg       0.76      0.78      0.73     25000</p>
+<hr class="docutils" />
+<div class="section" id="project-organization">
+<span id="project-organization"></span><h2>Project Organization<a class="headerlink" href="#project-organization" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>├── Makefile           &lt;- Makefile with commands like `make data` or `make train`
+├── README.md          &lt;- The top-level README for developers using this project.
+├── data
+│   ├── external       &lt;- Data from third party sources.
+│   ├── interim        &lt;- Intermediate data that has been transformed.
+│   ├── processed      &lt;- The final, canonical data sets for modeling.
+│   └── raw            &lt;- The original, immutable data dump.
+│
+├── docs               &lt;- A default Sphinx project; see sphinx-doc.org for details
+│
+├── models             &lt;- Trained and serialized models, model predictions, or model summaries
+│
+├── .ipynb             &lt;- Jupyter notebooks.
+│
+├── references         &lt;- Data dictionaries, manuals, and all other explanatory materials.
+│
+├── reports            &lt;- Generated analysis as HTML, PDF, LaTeX, etc.
+│   └── figures        &lt;- Generated graphics and figures to be used in reporting
+│
+├── environment.yml   &lt;- The environment file for reproducing the analysis environment
+│
+├── src                &lt;- Source code for use in this project.
+    ├── __init__.py    &lt;- Makes src a Python module
+    │
+    ├── data           &lt;- Scripts to download or generate data
+    │   └── make_dataset.py
+    │
+    ├── features       &lt;- Scripts to turn raw data into features for modeling
+    │   └── build_features.py
+    │
+    ├── models         &lt;- Scripts to train models and then use trained models to make
+        │                 predictions
+        ├── predict_train_model.py
+       
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="modules.html" class="btn btn-neutral float-right" title="Python Modules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="target_modeling documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,1484 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Introduction \n",
+    "\n",
+    "This report analyzes the several machine learning models—Logistic Regression, Stochastic Gradient Descent, Decision Tree, and Random Forest—through model evaluation and the tuning of hyperparameters, which are parameters that define the model. The chosen models where used because they best handled large data sets with lots of features. The features were cleaned up and transformed in the third section of the Jupyter Notebook: Clean raw data. \n",
+    "\n",
+    "In the Clean raw data section I removed mostly empty columns and converted time like columns to time stamps, which were later converted to integers for preprocessing. This last step separates the data set into testing and training sets for model validation. In the preprocessing the data is also scaled from 0 to 1, this helps the models converge. \n",
+    "\n",
+    "Once the notebook has been run once, the cleaned data will be saved into a csv file. Then the notebook could be started from Section: Load cleaned data. \n",
+    "\n",
+    "The initial inspection of the data demonstrates an unbalanced data set, with ~75% of data labeled 0; ~25%, 1. Wherever possible the models were tuned to fit an unbalanced data set, with class_weight ='balanced'. Given more time and familiarity with models, I would have included Validation Curves to plot validation scores and training scores as a function of model complexity. \n",
+    "\n",
+    "**Summary**\n",
+    "\n",
+    "Most of the models converged, however, some converged faster than others. Logistic Regression yielded the best f1-score for items labeled 1. Logistic Regression also took the longest time to train. Conversely, Random Forest yielded the best f1 score for items labels 0, and with the shortest training time. \n",
+    "\n",
+    "\n",
+    "\n",
+    "\n",
+    "\n",
+    "\n",
+    "**Logistic Regression**\n",
+    "\n",
+    "train time: 682.77s\n",
+    "\n",
+    "test time: 0.32s\n",
+    "\n",
+    "Accuracy Score: 0.67684\n",
+    "\n",
+    "              precision    recall  f1-score   support\n",
+    "\n",
+    "           0       0.87      0.67      0.76     18705\n",
+    "           1       0.42      0.71      0.52      6295\n",
+    "\n",
+    "   micro avg       0.68      0.68      0.68     25000\n",
+    "   \n",
+    "   macro avg       0.64      0.69      0.64     25000\n",
+    "   \n",
+    "weighted avg       0.76      0.68      0.70     25000\n",
+    "\n",
+    "--------------------------------------------------------------------------------\n",
+    "**Stochastic Gradient Descent**\n",
+    "\n",
+    "train time: 6.00s\n",
+    "\n",
+    "test time: 0.04s\n",
+    "\n",
+    "Accuracy Score: 0.58804\n",
+    "\n",
+    "              precision    recall  f1-score   support\n",
+    "\n",
+    "           0       0.82      0.58      0.68     18705\n",
+    "           1       0.33      0.61      0.43      6295\n",
+    "\n",
+    "   micro avg       0.59      0.59      0.59     25000\n",
+    "   \n",
+    "   macro avg       0.57      0.60      0.55     25000\n",
+    "   \n",
+    "weighted avg       0.69      0.59      0.62     25000\n",
+    "\n",
+    "--------------------------------------------------------------------------------\n",
+    "**Decision Tree**\n",
+    "\n",
+    "train time: 30.06s\n",
+    "\n",
+    "test time: 0.14s\n",
+    "\n",
+    "Accuracy Score: 0.65544\n",
+    "\n",
+    "              precision    recall  f1-score   support\n",
+    "\n",
+    "           0       0.84      0.66      0.74     18705\n",
+    "           1       0.39      0.63      0.48      6295\n",
+    "\n",
+    "   micro avg       0.66      0.66      0.66     25000\n",
+    "   \n",
+    "   macro avg       0.61      0.65      0.61     25000\n",
+    "   \n",
+    "weighted avg       0.73      0.66      0.68     25000\n",
+    "\n",
+    "--------------------------------------------------------------------------------\n",
+    "**Random Forest**\n",
+    "\n",
+    "train time: 44.60s\n",
+    "\n",
+    "test time: 0.90s\n",
+    "\n",
+    "Accuracy Score: 0.77708\n",
+    "\n",
+    "              precision    recall  f1-score   support\n",
+    "\n",
+    "           0       0.79      0.96      0.87     18705\n",
+    "           1       0.67      0.23      0.34      6295\n",
+    "\n",
+    "   micro avg       0.78      0.78      0.78     25000\n",
+    "   \n",
+    "   macro avg       0.73      0.59      0.60     25000\n",
+    "   \n",
+    "weighted avg       0.76      0.78      0.73     25000\n",
+    "\n",
+    "--------------------------------------------------------------------------------"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 43,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "The autoreload extension is already loaded. To reload it, use:\n",
+      "  %reload_ext autoreload\n"
+     ]
+    }
+   ],
+   "source": [
+    "%load_ext autoreload\n",
+    "%autoreload 2\n",
+    "\n",
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "\n",
+    "from src import find_duplicates, find_empty_columns, find_low_variance, find_low_var_categories, replace_NaN, time_like, convert_to_timestamp\n",
+    "from src import run_models, model_dict"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Load raw data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/Users/cristian/anaconda/lib/python3.6/site-packages/IPython/core/interactiveshell.py:2728: DtypeWarning: Columns (49,191,476) have mixed types. Specify dtype option on import or set low_memory=False.\n",
+      "  interactivity=interactivity, compiler=compiler, result=result)\n"
+     ]
+    }
+   ],
+   "source": [
+    "filename = 'data/raw/targeting_model_data.csv' \n",
+    "data = pd.read_csv(filename)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 100000 entries, 0 to 99999\n",
+      "Columns: 562 entries, FLOZVPMFT4626A to ibe9588SEUQO0831A\n",
+      "dtypes: float64(292), int64(129), object(141)\n",
+      "memory usage: 428.8+ MB\n"
+     ]
+    }
+   ],
+   "source": [
+    "data.info()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Number of columns: 562\n",
+      "Number of rows: 100000\n"
+     ]
+    }
+   ],
+   "source": [
+    "print('Number of columns: {}'.format(data.shape[1]))\n",
+    "print('Number of rows: {}'.format(data.shape[0]))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>FLOZVPMFT4626A</th>\n",
+       "      <th>ibe1270YRFHJ3350O</th>\n",
+       "      <th>ibe1270UUGLZ8167Q</th>\n",
+       "      <th>ibe1271DCBOP1538T</th>\n",
+       "      <th>ibe1271UEOXF6805V</th>\n",
+       "      <th>ibe1273MMNAC5195E</th>\n",
+       "      <th>ibe1273KQXUT2596F</th>\n",
+       "      <th>ibe1274DFDFF5102Q</th>\n",
+       "      <th>ibe1274BHMXG3244U</th>\n",
+       "      <th>ibe1275QYWDP9371S</th>\n",
+       "      <th>...</th>\n",
+       "      <th>ibe9588RHJVI3838A</th>\n",
+       "      <th>ibe9588PFUUV4361R</th>\n",
+       "      <th>ibe9588KHKHQ6606C</th>\n",
+       "      <th>ibe9588VBRCG7737V</th>\n",
+       "      <th>ibe9588LZKVW3171Q</th>\n",
+       "      <th>ibe9588XPLHJ3729U</th>\n",
+       "      <th>ibe9588AWQKW9305L</th>\n",
+       "      <th>ibe9588HVWQG4124G</th>\n",
+       "      <th>ibe9588YWABE2309I</th>\n",
+       "      <th>ibe9588SEUQO0831A</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0</td>\n",
+       "      <td>17.0</td>\n",
+       "      <td>3</td>\n",
+       "      <td>12B</td>\n",
+       "      <td>3</td>\n",
+       "      <td>9.0</td>\n",
+       "      <td>E</td>\n",
+       "      <td>01C</td>\n",
+       "      <td>3</td>\n",
+       "      <td>01C</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>0</td>\n",
+       "      <td>1.0</td>\n",
+       "      <td>3</td>\n",
+       "      <td>11B</td>\n",
+       "      <td>3</td>\n",
+       "      <td>7.0</td>\n",
+       "      <td>E</td>\n",
+       "      <td>01C</td>\n",
+       "      <td>3</td>\n",
+       "      <td>01C</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>0</td>\n",
+       "      <td>61.0</td>\n",
+       "      <td>3</td>\n",
+       "      <td>06X</td>\n",
+       "      <td>3</td>\n",
+       "      <td>12.0</td>\n",
+       "      <td>E</td>\n",
+       "      <td>03C</td>\n",
+       "      <td>3</td>\n",
+       "      <td>11C</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>0</td>\n",
+       "      <td>13.0</td>\n",
+       "      <td>3</td>\n",
+       "      <td>12B</td>\n",
+       "      <td>3</td>\n",
+       "      <td>5.0</td>\n",
+       "      <td>E</td>\n",
+       "      <td>05C</td>\n",
+       "      <td>3</td>\n",
+       "      <td>07U</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>0</td>\n",
+       "      <td>37.0</td>\n",
+       "      <td>3</td>\n",
+       "      <td>05X</td>\n",
+       "      <td>3</td>\n",
+       "      <td>7.0</td>\n",
+       "      <td>E</td>\n",
+       "      <td>05C</td>\n",
+       "      <td>3</td>\n",
+       "      <td>08C</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>5 rows × 562 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   FLOZVPMFT4626A  ibe1270YRFHJ3350O ibe1270UUGLZ8167Q ibe1271DCBOP1538T  \\\n",
+       "0               0               17.0                 3               12B   \n",
+       "1               0                1.0                 3               11B   \n",
+       "2               0               61.0                 3               06X   \n",
+       "3               0               13.0                 3               12B   \n",
+       "4               0               37.0                 3               05X   \n",
+       "\n",
+       "  ibe1271UEOXF6805V  ibe1273MMNAC5195E ibe1273KQXUT2596F ibe1274DFDFF5102Q  \\\n",
+       "0                 3                9.0                 E               01C   \n",
+       "1                 3                7.0                 E               01C   \n",
+       "2                 3               12.0                 E               03C   \n",
+       "3                 3                5.0                 E               05C   \n",
+       "4                 3                7.0                 E               05C   \n",
+       "\n",
+       "  ibe1274BHMXG3244U ibe1275QYWDP9371S        ...         ibe9588RHJVI3838A  \\\n",
+       "0                 3               01C        ...                         0   \n",
+       "1                 3               01C        ...                         0   \n",
+       "2                 3               11C        ...                         0   \n",
+       "3                 3               07U        ...                         0   \n",
+       "4                 3               08C        ...                         0   \n",
+       "\n",
+       "   ibe9588PFUUV4361R ibe9588KHKHQ6606C ibe9588VBRCG7737V ibe9588LZKVW3171Q  \\\n",
+       "0                  0                 0                 0                 0   \n",
+       "1                  0                 0                 0                 0   \n",
+       "2                  0                 0                 0                 0   \n",
+       "3                  0                 0                 0                 0   \n",
+       "4                  0                 0                 0                 0   \n",
+       "\n",
+       "   ibe9588XPLHJ3729U  ibe9588AWQKW9305L  ibe9588HVWQG4124G  ibe9588YWABE2309I  \\\n",
+       "0                  0                  0                  0                  0   \n",
+       "1                  1                  0                  0                  0   \n",
+       "2                  0                  0                  0                  0   \n",
+       "3                  0                  1                  0                  0   \n",
+       "4                  1                  0                  0                  0   \n",
+       "\n",
+       "   ibe9588SEUQO0831A  \n",
+       "0                  1  \n",
+       "1                  0  \n",
+       "2                  0  \n",
+       "3                  0  \n",
+       "4                  0  \n",
+       "\n",
+       "[5 rows x 562 columns]"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# quick look at data \n",
+    "data.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0    74528\n",
+       "1    25472\n",
+       "Name: FLOZVPMFT4626A, dtype: int64"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Composition of target data, this demonstrates imbalanced data. And thus accuracy alone is not a good metric for assessing performance of model. \n",
+    "data['FLOZVPMFT4626A'].value_counts()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Clean raw data"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Find and drop dulicate columns"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "duplicates = find_duplicates(data)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Number of duplicate columns dropped: 10\n"
+     ]
+    }
+   ],
+   "source": [
+    "print('Number of duplicate columns dropped: {}'.format(len(duplicates)))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "# data frame excluding dropped columns \n",
+    "df = data.drop(columns=duplicates)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Drop columns that have > 80% missing values "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "empty_columns = find_empty_columns(df)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Number of mostly empty columns dropped: 199\n"
+     ]
+    }
+   ],
+   "source": [
+    "print('Number of mostly empty columns dropped: {}'.format(len(empty_columns)))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# data frame excluding dropped columns \n",
+    "df = df.drop(columns=empty_columns)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Drop columns with low variance, data type int64 or float64 \n",
+    "motivated by the Variance Threshold function https://scikit-learn.org/stable/modules/feature_selection.html"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "# data frame excluding dropped columns \n",
+    "low_var_columns = find_low_variance(df)\n",
+    "df.drop(columns=low_var_columns, inplace=True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Number of low variance columns dropped: 159\n"
+     ]
+    }
+   ],
+   "source": [
+    "print('Number of low variance columns dropped: {}'.format(len(low_var_columns)))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Drop Categorical values with low variance by converting to labels to dummy variables and filtering by threshold variance"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "low_v_categories = find_low_var_categories(df)\n",
+    "df.drop(columns=low_v_categories, inplace=True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Number of low variance category columns dropped: 7\n"
+     ]
+    }
+   ],
+   "source": [
+    "print('Number of low variance category columns dropped: {}'.format(len(low_v_categories)))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Replace NaN values in numerical columns with median value of series "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "df= replace_NaN(df)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Find date like columns and convert to timestamps, then to integer type\n",
+    "\n",
+    "Visually inspecting time like columns we can easily find columns that are probably not meant to be timestamps"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>ibe6532KHUBA7864D</th>\n",
+       "      <th>ibe6533DZDLI9594P</th>\n",
+       "      <th>ibe8434JPYKM2838C</th>\n",
+       "      <th>ibe8579PIXYM2487A</th>\n",
+       "      <th>ibe8588DPLHE7435F</th>\n",
+       "      <th>ibe8592TOWAM1138U</th>\n",
+       "      <th>ibe8614UPZWA9445N</th>\n",
+       "      <th>ibe8643XQWMK2933S</th>\n",
+       "      <th>ibe8840PMLTL7040B</th>\n",
+       "      <th>ibe9042PFXFK2434Y</th>\n",
+       "      <th>ibe9047QMSFT7844Y</th>\n",
+       "      <th>ibe9052HKVXC1161K</th>\n",
+       "      <th>ibe9057AEWDA2240T</th>\n",
+       "      <th>ibe9152JHMZI9585O</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>20150513.0</td>\n",
+       "      <td>20140426.0</td>\n",
+       "      <td>2012.0</td>\n",
+       "      <td>200609.0</td>\n",
+       "      <td>1751.0</td>\n",
+       "      <td>1982.0</td>\n",
+       "      <td>20161.0</td>\n",
+       "      <td>200700.0</td>\n",
+       "      <td>24034.0</td>\n",
+       "      <td>2009.0</td>\n",
+       "      <td>20160106.0</td>\n",
+       "      <td>2007.0</td>\n",
+       "      <td>20160106.0</td>\n",
+       "      <td>20140900.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>20141025.0</td>\n",
+       "      <td>20140804.0</td>\n",
+       "      <td>2011.0</td>\n",
+       "      <td>201107.0</td>\n",
+       "      <td>2957.0</td>\n",
+       "      <td>1997.0</td>\n",
+       "      <td>20153.0</td>\n",
+       "      <td>201107.0</td>\n",
+       "      <td>80785.0</td>\n",
+       "      <td>2003.0</td>\n",
+       "      <td>20160106.0</td>\n",
+       "      <td>1998.0</td>\n",
+       "      <td>20160106.0</td>\n",
+       "      <td>20141000.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>20141215.0</td>\n",
+       "      <td>20140804.0</td>\n",
+       "      <td>2012.0</td>\n",
+       "      <td>200609.0</td>\n",
+       "      <td>1751.0</td>\n",
+       "      <td>1982.0</td>\n",
+       "      <td>20153.0</td>\n",
+       "      <td>200700.0</td>\n",
+       "      <td>24034.0</td>\n",
+       "      <td>2009.0</td>\n",
+       "      <td>20160106.0</td>\n",
+       "      <td>2007.0</td>\n",
+       "      <td>20160106.0</td>\n",
+       "      <td>20140300.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>20150707.0</td>\n",
+       "      <td>20140804.0</td>\n",
+       "      <td>2012.0</td>\n",
+       "      <td>200609.0</td>\n",
+       "      <td>1751.0</td>\n",
+       "      <td>1982.0</td>\n",
+       "      <td>20154.0</td>\n",
+       "      <td>201306.0</td>\n",
+       "      <td>24034.0</td>\n",
+       "      <td>2012.0</td>\n",
+       "      <td>20160106.0</td>\n",
+       "      <td>2007.0</td>\n",
+       "      <td>20160106.0</td>\n",
+       "      <td>20140100.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>20151015.0</td>\n",
+       "      <td>20140804.0</td>\n",
+       "      <td>2013.0</td>\n",
+       "      <td>200811.0</td>\n",
+       "      <td>910.0</td>\n",
+       "      <td>1950.0</td>\n",
+       "      <td>20154.0</td>\n",
+       "      <td>200811.0</td>\n",
+       "      <td>87135.0</td>\n",
+       "      <td>2009.0</td>\n",
+       "      <td>20160106.0</td>\n",
+       "      <td>2007.0</td>\n",
+       "      <td>20160106.0</td>\n",
+       "      <td>20140300.0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   ibe6532KHUBA7864D  ibe6533DZDLI9594P  ibe8434JPYKM2838C  ibe8579PIXYM2487A  \\\n",
+       "0         20150513.0         20140426.0             2012.0           200609.0   \n",
+       "1         20141025.0         20140804.0             2011.0           201107.0   \n",
+       "2         20141215.0         20140804.0             2012.0           200609.0   \n",
+       "3         20150707.0         20140804.0             2012.0           200609.0   \n",
+       "4         20151015.0         20140804.0             2013.0           200811.0   \n",
+       "\n",
+       "   ibe8588DPLHE7435F  ibe8592TOWAM1138U  ibe8614UPZWA9445N  ibe8643XQWMK2933S  \\\n",
+       "0             1751.0             1982.0            20161.0           200700.0   \n",
+       "1             2957.0             1997.0            20153.0           201107.0   \n",
+       "2             1751.0             1982.0            20153.0           200700.0   \n",
+       "3             1751.0             1982.0            20154.0           201306.0   \n",
+       "4              910.0             1950.0            20154.0           200811.0   \n",
+       "\n",
+       "   ibe8840PMLTL7040B  ibe9042PFXFK2434Y  ibe9047QMSFT7844Y  ibe9052HKVXC1161K  \\\n",
+       "0            24034.0             2009.0         20160106.0             2007.0   \n",
+       "1            80785.0             2003.0         20160106.0             1998.0   \n",
+       "2            24034.0             2009.0         20160106.0             2007.0   \n",
+       "3            24034.0             2012.0         20160106.0             2007.0   \n",
+       "4            87135.0             2009.0         20160106.0             2007.0   \n",
+       "\n",
+       "   ibe9057AEWDA2240T  ibe9152JHMZI9585O  \n",
+       "0         20160106.0         20140900.0  \n",
+       "1         20160106.0         20141000.0  \n",
+       "2         20160106.0         20140300.0  \n",
+       "3         20160106.0         20140100.0  \n",
+       "4         20160106.0         20140300.0  "
+      ]
+     },
+     "execution_count": 18,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "time_columns = time_like(df)\n",
+    "df[time_columns].head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "# Visually inspecting items that are not potential time stamps\n",
+    "not_time_columns = ['ibe8588DPLHE7435F', 'ibe8840PMLTL7040B']\n",
+    "real_time_columns = [item for item in time_columns if item not in not_time_columns]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "# remove extra zeros from column \n",
+    "df['ibe9152JHMZI9585O'] = df['ibe9152JHMZI9585O']/100"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df = convert_to_timestamp(df, real_time_columns)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>ibe6532KHUBA7864D</th>\n",
+       "      <th>ibe6533DZDLI9594P</th>\n",
+       "      <th>ibe8434JPYKM2838C</th>\n",
+       "      <th>ibe8579PIXYM2487A</th>\n",
+       "      <th>ibe8592TOWAM1138U</th>\n",
+       "      <th>ibe8614UPZWA9445N</th>\n",
+       "      <th>ibe8643XQWMK2933S</th>\n",
+       "      <th>ibe9042PFXFK2434Y</th>\n",
+       "      <th>ibe9047QMSFT7844Y</th>\n",
+       "      <th>ibe9052HKVXC1161K</th>\n",
+       "      <th>ibe9057AEWDA2240T</th>\n",
+       "      <th>ibe9152JHMZI9585O</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>1431475200000000000</td>\n",
+       "      <td>1398470400000000000</td>\n",
+       "      <td>1325376000000000000</td>\n",
+       "      <td>1136073600000000000</td>\n",
+       "      <td>378691200000000000</td>\n",
+       "      <td>1451606400000000000</td>\n",
+       "      <td>1167609600000000000</td>\n",
+       "      <td>1230768000000000000</td>\n",
+       "      <td>1452038400000000000</td>\n",
+       "      <td>1167609600000000000</td>\n",
+       "      <td>1452038400000000000</td>\n",
+       "      <td>1409529600000000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>1414195200000000000</td>\n",
+       "      <td>1407110400000000000</td>\n",
+       "      <td>1293840000000000000</td>\n",
+       "      <td>1293840000000000000</td>\n",
+       "      <td>852076800000000000</td>\n",
+       "      <td>1425168000000000000</td>\n",
+       "      <td>1293840000000000000</td>\n",
+       "      <td>1041379200000000000</td>\n",
+       "      <td>1452038400000000000</td>\n",
+       "      <td>883612800000000000</td>\n",
+       "      <td>1452038400000000000</td>\n",
+       "      <td>1412121600000000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>1418601600000000000</td>\n",
+       "      <td>1407110400000000000</td>\n",
+       "      <td>1325376000000000000</td>\n",
+       "      <td>1136073600000000000</td>\n",
+       "      <td>378691200000000000</td>\n",
+       "      <td>1425168000000000000</td>\n",
+       "      <td>1167609600000000000</td>\n",
+       "      <td>1230768000000000000</td>\n",
+       "      <td>1452038400000000000</td>\n",
+       "      <td>1167609600000000000</td>\n",
+       "      <td>1452038400000000000</td>\n",
+       "      <td>1393632000000000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>1436227200000000000</td>\n",
+       "      <td>1407110400000000000</td>\n",
+       "      <td>1325376000000000000</td>\n",
+       "      <td>1136073600000000000</td>\n",
+       "      <td>378691200000000000</td>\n",
+       "      <td>1427846400000000000</td>\n",
+       "      <td>1356998400000000000</td>\n",
+       "      <td>1325376000000000000</td>\n",
+       "      <td>1452038400000000000</td>\n",
+       "      <td>1167609600000000000</td>\n",
+       "      <td>1452038400000000000</td>\n",
+       "      <td>1388534400000000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>1444867200000000000</td>\n",
+       "      <td>1407110400000000000</td>\n",
+       "      <td>1356998400000000000</td>\n",
+       "      <td>1199145600000000000</td>\n",
+       "      <td>-631152000000000000</td>\n",
+       "      <td>1427846400000000000</td>\n",
+       "      <td>1199145600000000000</td>\n",
+       "      <td>1230768000000000000</td>\n",
+       "      <td>1452038400000000000</td>\n",
+       "      <td>1167609600000000000</td>\n",
+       "      <td>1452038400000000000</td>\n",
+       "      <td>1393632000000000000</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "     ibe6532KHUBA7864D    ibe6533DZDLI9594P    ibe8434JPYKM2838C  \\\n",
+       "0  1431475200000000000  1398470400000000000  1325376000000000000   \n",
+       "1  1414195200000000000  1407110400000000000  1293840000000000000   \n",
+       "2  1418601600000000000  1407110400000000000  1325376000000000000   \n",
+       "3  1436227200000000000  1407110400000000000  1325376000000000000   \n",
+       "4  1444867200000000000  1407110400000000000  1356998400000000000   \n",
+       "\n",
+       "     ibe8579PIXYM2487A   ibe8592TOWAM1138U    ibe8614UPZWA9445N  \\\n",
+       "0  1136073600000000000  378691200000000000  1451606400000000000   \n",
+       "1  1293840000000000000  852076800000000000  1425168000000000000   \n",
+       "2  1136073600000000000  378691200000000000  1425168000000000000   \n",
+       "3  1136073600000000000  378691200000000000  1427846400000000000   \n",
+       "4  1199145600000000000 -631152000000000000  1427846400000000000   \n",
+       "\n",
+       "     ibe8643XQWMK2933S    ibe9042PFXFK2434Y    ibe9047QMSFT7844Y  \\\n",
+       "0  1167609600000000000  1230768000000000000  1452038400000000000   \n",
+       "1  1293840000000000000  1041379200000000000  1452038400000000000   \n",
+       "2  1167609600000000000  1230768000000000000  1452038400000000000   \n",
+       "3  1356998400000000000  1325376000000000000  1452038400000000000   \n",
+       "4  1199145600000000000  1230768000000000000  1452038400000000000   \n",
+       "\n",
+       "     ibe9052HKVXC1161K    ibe9057AEWDA2240T    ibe9152JHMZI9585O  \n",
+       "0  1167609600000000000  1452038400000000000  1409529600000000000  \n",
+       "1   883612800000000000  1452038400000000000  1412121600000000000  \n",
+       "2  1167609600000000000  1452038400000000000  1393632000000000000  \n",
+       "3  1167609600000000000  1452038400000000000  1388534400000000000  \n",
+       "4  1167609600000000000  1452038400000000000  1393632000000000000  "
+      ]
+     },
+     "execution_count": 27,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df[ real_time_columns].head()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Save cleaned up dataframe as csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "filename = 'data/interim/cleaned_columns.csv'\n",
+    "df.to_csv(path_or_buf=filename, index=False)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Load cleaned data "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>FLOZVPMFT4626A</th>\n",
+       "      <th>ibe1270YRFHJ3350O</th>\n",
+       "      <th>ibe1271DCBOP1538T</th>\n",
+       "      <th>ibe1273MMNAC5195E</th>\n",
+       "      <th>ibe1274DFDFF5102Q</th>\n",
+       "      <th>ibe1275QYWDP9371S</th>\n",
+       "      <th>ibe1280ORQKP6566Z</th>\n",
+       "      <th>ibe1281AGNWU9303H</th>\n",
+       "      <th>ibe1281VSZLA4159S</th>\n",
+       "      <th>ibe2062AHFGH0763Q</th>\n",
+       "      <th>...</th>\n",
+       "      <th>ibe9153QSXNN0648A</th>\n",
+       "      <th>ibe9154GOSYR7154P</th>\n",
+       "      <th>ibe9180FFUYI1365V</th>\n",
+       "      <th>ibe9181PWJGU8847L</th>\n",
+       "      <th>ibe9350NHRIV6568X</th>\n",
+       "      <th>ibe9351VNIYI1676Y</th>\n",
+       "      <th>ibe9356VXVDJ5952B</th>\n",
+       "      <th>ibe9358UBJWE4744M</th>\n",
+       "      <th>ibe9509UGCNU4337M</th>\n",
+       "      <th>ibe9514RWCHD8503K</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0</td>\n",
+       "      <td>17.0</td>\n",
+       "      <td>12B</td>\n",
+       "      <td>9.0</td>\n",
+       "      <td>01C</td>\n",
+       "      <td>01C</td>\n",
+       "      <td>35.0</td>\n",
+       "      <td>09L</td>\n",
+       "      <td>3</td>\n",
+       "      <td>1</td>\n",
+       "      <td>...</td>\n",
+       "      <td>1</td>\n",
+       "      <td>C1</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>13.0</td>\n",
+       "      <td>13.0</td>\n",
+       "      <td>5</td>\n",
+       "      <td>9.0</td>\n",
+       "      <td>1.0</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>0</td>\n",
+       "      <td>1.0</td>\n",
+       "      <td>11B</td>\n",
+       "      <td>7.0</td>\n",
+       "      <td>01C</td>\n",
+       "      <td>01C</td>\n",
+       "      <td>11.0</td>\n",
+       "      <td>04M</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>A1</td>\n",
+       "      <td>L1</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>4.0</td>\n",
+       "      <td>13.0</td>\n",
+       "      <td>B</td>\n",
+       "      <td>2.0</td>\n",
+       "      <td>1.0</td>\n",
+       "      <td>2.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>0</td>\n",
+       "      <td>61.0</td>\n",
+       "      <td>06X</td>\n",
+       "      <td>12.0</td>\n",
+       "      <td>03C</td>\n",
+       "      <td>11C</td>\n",
+       "      <td>38.0</td>\n",
+       "      <td>12L</td>\n",
+       "      <td>3</td>\n",
+       "      <td>0</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>25.0</td>\n",
+       "      <td>5.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>15.0</td>\n",
+       "      <td>1.0</td>\n",
+       "      <td>1.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>0</td>\n",
+       "      <td>13.0</td>\n",
+       "      <td>12B</td>\n",
+       "      <td>5.0</td>\n",
+       "      <td>05C</td>\n",
+       "      <td>07U</td>\n",
+       "      <td>14.0</td>\n",
+       "      <td>05M</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>M1</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>14.0</td>\n",
+       "      <td>5.0</td>\n",
+       "      <td>7</td>\n",
+       "      <td>7.0</td>\n",
+       "      <td>1.0</td>\n",
+       "      <td>2.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>0</td>\n",
+       "      <td>37.0</td>\n",
+       "      <td>05X</td>\n",
+       "      <td>7.0</td>\n",
+       "      <td>05C</td>\n",
+       "      <td>08C</td>\n",
+       "      <td>33.0</td>\n",
+       "      <td>11L</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>B6</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>13.0</td>\n",
+       "      <td>10.0</td>\n",
+       "      <td>6</td>\n",
+       "      <td>10.0</td>\n",
+       "      <td>1.0</td>\n",
+       "      <td>2.0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>5 rows × 187 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   FLOZVPMFT4626A  ibe1270YRFHJ3350O ibe1271DCBOP1538T  ibe1273MMNAC5195E  \\\n",
+       "0               0               17.0               12B                9.0   \n",
+       "1               0                1.0               11B                7.0   \n",
+       "2               0               61.0               06X               12.0   \n",
+       "3               0               13.0               12B                5.0   \n",
+       "4               0               37.0               05X                7.0   \n",
+       "\n",
+       "  ibe1274DFDFF5102Q ibe1275QYWDP9371S  ibe1280ORQKP6566Z ibe1281AGNWU9303H  \\\n",
+       "0               01C               01C               35.0               09L   \n",
+       "1               01C               01C               11.0               04M   \n",
+       "2               03C               11C               38.0               12L   \n",
+       "3               05C               07U               14.0               05M   \n",
+       "4               05C               08C               33.0               11L   \n",
+       "\n",
+       "  ibe1281VSZLA4159S  ibe2062AHFGH0763Q        ...          ibe9153QSXNN0648A  \\\n",
+       "0                 3                  1        ...                          1   \n",
+       "1                 1                  0        ...                          0   \n",
+       "2                 3                  0        ...                          0   \n",
+       "3                 1                  0        ...                          0   \n",
+       "4                 1                  0        ...                          0   \n",
+       "\n",
+       "   ibe9154GOSYR7154P  ibe9180FFUYI1365V ibe9181PWJGU8847L  ibe9350NHRIV6568X  \\\n",
+       "0                 C1                NaN               NaN               13.0   \n",
+       "1                 A1                 L1               NaN                4.0   \n",
+       "2                NaN                NaN               NaN               25.0   \n",
+       "3                NaN                 M1               NaN               14.0   \n",
+       "4                 B6                NaN               NaN               13.0   \n",
+       "\n",
+       "   ibe9351VNIYI1676Y  ibe9356VXVDJ5952B  ibe9358UBJWE4744M  ibe9509UGCNU4337M  \\\n",
+       "0               13.0                  5                9.0                1.0   \n",
+       "1               13.0                  B                2.0                1.0   \n",
+       "2                5.0                  1               15.0                1.0   \n",
+       "3                5.0                  7                7.0                1.0   \n",
+       "4               10.0                  6               10.0                1.0   \n",
+       "\n",
+       "   ibe9514RWCHD8503K  \n",
+       "0                1.0  \n",
+       "1                2.0  \n",
+       "2                1.0  \n",
+       "3                2.0  \n",
+       "4                2.0  \n",
+       "\n",
+       "[5 rows x 187 columns]"
+      ]
+     },
+     "execution_count": 29,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "filename = 'data/interim/cleaned_columns.csv'\n",
+    "df = pd.read_csv(filename)\n",
+    "df.head()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Preprocess data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Load data \n",
+    "X =pd.get_dummies(df.iloc[:,1:]).values\n",
+    "target = df.iloc[:,0].values"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "(75000, 1287) (25000, 1287)\n"
+     ]
+    }
+   ],
+   "source": [
+    "# split the data\n",
+    "Xtrain, Xtest, ytrain, ytest = train_test_split(X, target, random_state=2)\n",
+    "print(Xtrain.shape, Xtest.shape)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# preprocess data \n",
+    "from sklearn.preprocessing import StandardScaler\n",
+    "scaler = StandardScaler()\n",
+    "scaler.fit(Xtrain)  # fit only on training data\n",
+    "Xtrain = scaler.transform(Xtrain)\n",
+    "Xtest = scaler.transform(Xtest)  # apply same transformation to test data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 38,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Mean of random array: 0.0\n",
+      "Std of random array: 1.0\n"
+     ]
+    }
+   ],
+   "source": [
+    "# verify preprocess is working correctly \n",
+    "print('Mean of random array: {}'.format(round(Xtrain[:,8].mean())))\n",
+    "print('Std of random array: {}'.format(round(Xtrain[:,8].std())))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Models "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 46,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Logistic Regression\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/Users/cristian/anaconda/lib/python3.6/site-packages/sklearn/svm/base.py:922: ConvergenceWarning: Liblinear failed to converge, increase the number of iterations.\n",
+      "  \"the number of iterations.\", ConvergenceWarning)\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "train time: 682.77s\n",
+      "test time: 0.32s\n",
+      "Accuracy Score: 0.67684 \n",
+      "\n",
+      "              precision    recall  f1-score   support\n",
+      "\n",
+      "           0       0.87      0.67      0.76     18705\n",
+      "           1       0.42      0.71      0.52      6295\n",
+      "\n",
+      "   micro avg       0.68      0.68      0.68     25000\n",
+      "   macro avg       0.64      0.69      0.64     25000\n",
+      "weighted avg       0.76      0.68      0.70     25000\n",
+      "\n",
+      "--------------------------------------------------------------------------------\n",
+      "Stochastic Gradient Descent\n",
+      "train time: 6.00s\n",
+      "test time: 0.04s\n",
+      "Accuracy Score: 0.58804 \n",
+      "\n",
+      "              precision    recall  f1-score   support\n",
+      "\n",
+      "           0       0.82      0.58      0.68     18705\n",
+      "           1       0.33      0.61      0.43      6295\n",
+      "\n",
+      "   micro avg       0.59      0.59      0.59     25000\n",
+      "   macro avg       0.57      0.60      0.55     25000\n",
+      "weighted avg       0.69      0.59      0.62     25000\n",
+      "\n",
+      "--------------------------------------------------------------------------------\n",
+      "Decision Tree\n",
+      "train time: 30.06s\n",
+      "test time: 0.14s\n",
+      "Accuracy Score: 0.65544 \n",
+      "\n",
+      "              precision    recall  f1-score   support\n",
+      "\n",
+      "           0       0.84      0.66      0.74     18705\n",
+      "           1       0.39      0.63      0.48      6295\n",
+      "\n",
+      "   micro avg       0.66      0.66      0.66     25000\n",
+      "   macro avg       0.61      0.65      0.61     25000\n",
+      "weighted avg       0.73      0.66      0.68     25000\n",
+      "\n",
+      "--------------------------------------------------------------------------------\n",
+      "Random Forest\n",
+      "train time: 44.60s\n",
+      "test time: 0.90s\n",
+      "Accuracy Score: 0.77708 \n",
+      "\n",
+      "              precision    recall  f1-score   support\n",
+      "\n",
+      "           0       0.79      0.96      0.87     18705\n",
+      "           1       0.67      0.23      0.34      6295\n",
+      "\n",
+      "   micro avg       0.78      0.78      0.78     25000\n",
+      "   macro avg       0.73      0.59      0.60     25000\n",
+      "weighted avg       0.76      0.78      0.73     25000\n",
+      "\n",
+      "--------------------------------------------------------------------------------\n"
+     ]
+    }
+   ],
+   "source": [
+    "run_models(Xtrain, ytrain, Xtest, ytest, model_dict)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.3"
+  },
+  "toc": {
+   "nav_menu": {},
+   "number_sections": true,
+   "sideBar": true,
+   "skip_h1_title": false,
+   "toc_cell": false,
+   "toc_position": {},
+   "toc_section_display": "block",
+   "toc_window_display": true
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
