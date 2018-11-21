@@ -171,7 +171,7 @@ html_static_path = []
 html_show_sourcelink = True
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
-    html_show_sphinx = False
+html_show_sphinx = False
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
 # html_show_copyright = True
@@ -185,7 +185,7 @@ html_show_sourcelink = True
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'target_modelingdoc'
+htmlhelp_basename = 'target_modeling_doc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
