@@ -6,10 +6,6 @@
 target_modeling documentation
 ==============================================
 
-Code on `github <https://github.com/caheredia/target_modeling/>`_
-
-
-
 Contents:
 
 .. toctree::

@@ -1,0 +1,424 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>features.build_features &mdash; target_modeling 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> target_modeling
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">target_modeling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Python Modules</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../0.1-cristian_explore_data.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../0.1-cristian_explore_data.html#Load-raw-data">Load raw data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../0.1-cristian_explore_data.html#Clean-raw-data">Clean raw data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../0.1-cristian_explore_data.html#Load-cleaned-data">Load cleaned data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../0.1-cristian_explore_data.html#Preprocess-data">Preprocess data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../0.1-cristian_explore_data.html#Models">Models</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">target_modeling</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>features.build_features</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for features.build_features</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pandas.core.common</span> <span class="k">import</span> <span class="n">array_equivalent</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="find_duplicates"><a class="viewcode-back" href="../../_autosummary/features.build_features.html#features.build_features.find_duplicates">[docs]</a><span class="k">def</span> <span class="nf">find_duplicates</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Finds the names of duplicate columns.</span>
+
+<span class="sd">    Finds the different data types in a dataframe.</span>
+<span class="sd">    Creates a dictionary file with different data types as keys and the pertinent columns as keys.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : data : pandas.DataFrame</span>
+<span class="sd">        dataframe to search for duplicates</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    duplicates : list</span>
+<span class="sd">        list of duplicate column names.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># emptly list to save duplicates</span>
+    <span class="n">duplicates</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># group the different data types into a dictionary</span>
+    <span class="n">data_groups</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dtypes</span><span class="p">)</span><span class="o">.</span><span class="n">groups</span>
+
+    <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">columns</span> <span class="ow">in</span> <span class="n">data_groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+        <span class="n">sliced_columns_names</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">columns</span><span class="p">]</span><span class="o">.</span><span class="n">columns</span>
+        <span class="n">sliced_df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">columns</span><span class="p">]</span>
+        <span class="n">len_columns</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sliced_columns_names</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">position1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">len_columns</span><span class="p">):</span>
+            <span class="n">column1</span> <span class="o">=</span> <span class="n">sliced_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">position1</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="k">for</span> <span class="n">position2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">position1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">len_columns</span><span class="p">):</span>
+                <span class="n">column2</span> <span class="o">=</span> <span class="n">sliced_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">position2</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+                <span class="k">if</span> <span class="n">array_equivalent</span><span class="p">(</span><span class="n">column1</span><span class="p">,</span> <span class="n">column2</span><span class="p">):</span>
+                    <span class="n">duplicates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sliced_columns_names</span><span class="p">[</span><span class="n">position1</span><span class="p">])</span>
+                    <span class="k">break</span>
+
+    <span class="k">return</span> <span class="n">duplicates</span></div>
+
+
+<div class="viewcode-block" id="find_empty_columns"><a class="viewcode-back" href="../../_autosummary/features.build_features.html#features.build_features.find_empty_columns">[docs]</a><span class="k">def</span> <span class="nf">find_empty_columns</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.80</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A list of columns that have more &gt; 80% missing values.</span>
+
+<span class="sd">    For each column computes the number of missing values.</span>
+<span class="sd">    If the value is greater than 80%, relative to column length,</span>
+<span class="sd">    then column name is added to list.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pandas.DataFrame</span>
+<span class="sd">        dataframe with columns to search</span>
+<span class="sd">    threshold : int (optional)</span>
+<span class="sd">        threshold for deleting columns</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    empty_columns : list</span>
+<span class="sd">        a list of columns with mostly empty values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">empty_columns</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">df</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+            <span class="n">empty_columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">column</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">empty_columns</span></div>
+
+
+<div class="viewcode-block" id="find_low_variance"><a class="viewcode-back" href="../../_autosummary/features.build_features.html#features.build_features.find_low_variance">[docs]</a><span class="k">def</span> <span class="nf">find_low_variance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.18</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Finds columns with low variance.</span>
+
+<span class="sd">    Takes a dataframe as input. Creates a list of columns with low threshold.</span>
+<span class="sd">    These columns can then be dropped from original dataframe.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ---------------</span>
+<span class="sd">    data : pandas.DataFrame</span>
+<span class="sd">        dataframe with columns to search</span>
+<span class="sd">    threshold : int (optional)</span>
+<span class="sd">        threshold for deleting columns</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ---------------</span>
+<span class="sd">    low_variance_columns : list</span>
+<span class="sd">        a list of columns with low variance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">low_variance_columns</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;float64&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;int64&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">var</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">:</span>
+                <span class="n">low_variance_columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">column</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">low_variance_columns</span></div>
+
+
+<div class="viewcode-block" id="find_low_var_categories"><a class="viewcode-back" href="../../_autosummary/features.build_features.html#features.build_features.find_low_var_categories">[docs]</a><span class="k">def</span> <span class="nf">find_low_var_categories</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.18</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Finds categorical columns with low variance.</span>
+
+<span class="sd">    Takes a dataframe as input. Creates a list of columns with low threshold.</span>
+<span class="sd">    These columns can then be dropped from original dataframe.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ---------------</span>
+<span class="sd">    data : pandas.DataFrame</span>
+<span class="sd">        dataframe with columns to search</span>
+<span class="sd">    threshold : int (optional)</span>
+<span class="sd">        threshold for deleting columns</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ---------------</span>
+<span class="sd">    low_variance_columns : list</span>
+<span class="sd">        a list of columns with low variance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">low_variance_columns</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">])</span><span class="o">.</span><span class="n">var</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">:</span>
+                <span class="n">low_variance_columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">column</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">low_variance_columns</span></div>
+
+
+<div class="viewcode-block" id="replace_NaN"><a class="viewcode-back" href="../../_autosummary/features.build_features.html#features.build_features.replace_NaN">[docs]</a><span class="k">def</span> <span class="nf">replace_NaN</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Replace NaN values with the median from numerical column.</span>
+
+<span class="sd">    Takes a dataframe as input. Iterates through the dataframe for numeric types columns.</span>
+<span class="sd">    Replaces any NaN values with median value of column.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ---------------</span>
+<span class="sd">    data : pandas.DataFrame</span>
+<span class="sd">        dataframe with columns to search</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ---------------</span>
+<span class="sd">    data : pandas.DataFrame</span>
+<span class="sd">        dataframe with columns containing replaced NaNs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">median</span><span class="p">(),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="time_like"><a class="viewcode-back" href="../../_autosummary/features.build_features.html#features.build_features.time_like">[docs]</a><span class="k">def</span> <span class="nf">time_like</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Finds time like columns.</span>
+
+<span class="sd">    Takes a dataframe as input. Iterates through the dataframe columns.</span>
+<span class="sd">    Returns a list of potential time like columns.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ---------------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        dataframe with columns to search</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ---------------</span>
+<span class="sd">    low_variance_columns : list</span>
+<span class="sd">        a list of columns with low variance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">time_columns</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">df</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="mi">1000</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">time_columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">column</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">time_columns</span></div>
+
+
+<div class="viewcode-block" id="convert_to_timestamp"><a class="viewcode-back" href="../../_autosummary/features.build_features.html#features.build_features.convert_to_timestamp">[docs]</a><span class="k">def</span> <span class="nf">convert_to_timestamp</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">time_columns</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Coverts columns in a dataframe to datetime.</span>
+
+<span class="sd">    Takes a dataframe and list of columns as input.</span>
+<span class="sd">    Converts columns in list to datetime format, depending on the length of value.</span>
+<span class="sd">    For values longer than 6, only the year is stripped.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ---------------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        dataframe with columns to search</span>
+<span class="sd">    time_columns: list</span>
+<span class="sd">        list of time like columns</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ---------------</span>
+<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">        dataframe with converted time columns</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="n">time_columns</span><span class="p">]:</span>
+        <span class="c1"># convert year</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="mi">0</span><span class="p">])))</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="c1"># convert to time stamp and then to int</span>
+            <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+                <span class="nb">int</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;%Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="mi">0</span><span class="p">])))</span> <span class="o">==</span> <span class="mi">5</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="mi">0</span><span class="p">])))</span> <span class="o">==</span> <span class="mi">6</span><span class="p">):</span>
+            <span class="c1"># convert to time stamp and then to int</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+                    <span class="nb">int</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;%Y%m&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+                <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+                    <span class="nb">int</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;%Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+        <span class="c1"># convert to time stamp and then to int</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="mi">0</span><span class="p">])))</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+                <span class="nb">int</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

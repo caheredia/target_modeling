@@ -11,7 +11,7 @@ from sklearn.metrics import accuracy_score
 model_dict = {}
 
 model_dict['Logistic Regression'] = LogisticRegression(
-    class_weight='balanced', fit_intercept=False, solver='sag', max_iter=500, n_jobs=-1)
+    class_weight='balanced', fit_intercept=False, solver='saga', max_iter=200, n_jobs=-1)
 
 
 model_dict['Stochastic Gradient Descent'] = SGDClassifier(
@@ -29,12 +29,10 @@ model_dict['Random Forest'] = RandomForestClassifier(
 target_names = ['0', '1']
 
 
-def run_models(Xtrain, ytrain, Xtest, ytest, model_dict=model_dict):
+def run_models(Xtrain, ytrain, Xtest, ytest, model_dict):
     """Runs a list of models.
 
     Runs a list of models defined in model_dict.
-    Tax
-
 
     Parameters
     ----------
@@ -46,7 +44,7 @@ def run_models(Xtrain, ytrain, Xtest, ytest, model_dict=model_dict):
         test data
     ytrain : numpy.ndarray
         training test data
-    model_dict : list (optional)
+    model_dict : list
         dictionary of models to run
 
     """
